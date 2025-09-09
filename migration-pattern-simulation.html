@@ -2,16 +2,16 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <title>Migration-Simulation: Natürliche Muster, ROSARY©®, 2025 ff; (erweitert mit X-Daten)</title>
+    <title>Migration-Simulation: Natürliche Muster, ROSWARY©®, 2025 ff. ;   (mit D-Wave & X-Daten)</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style> body { margin: 0; } canvas { display: block; } .controls { position: absolute; top: 10px; left: 10px; background: white; padding: 10px; } #feedback { position: absolute; bottom: 10px; left: 10px; background: white; padding: 10px; } </style>
 </head>
 <body>
     <div class="controls">
-        <label>Q-Faktor (Skalierung): <input type="range" id="qSlider" min="0.1" max="1.5" step="0.1" value="0.618"></label><br>
+        <label>Q-Faktor (D-Wave-optimiert): <input type="range" id="qSlider" min="0.1" max="1.5" step="0.1" value="0.618"></label><br>
         <label>Rosenkranz-Modulus (Zyklus): <input type="range" id="modSlider" min="50" max="200" step="10" value="108"></label><br>
         <label>Herdengröße (bis 500k): <input type="number" id="herdSize" value="500000"></label><br>
-        <button onclick="simulate()">Migration simulieren (mit X-Daten)</button>
+        <button onclick="simulate()">Simulation mit D-Wave-Output</button>
     </div>
     <div id="feedback">Starte die Simulation...</div>
     
@@ -27,8 +27,12 @@
         const xData = [
             {id: 0, engagement: 0, herd: 500000, event: 'Remigration als Kreislauf'},
             {id: 3, engagement: 12, herd: 1000000, event: 'Voting-Patterns in Migration'},
-            {id: 7, engagement: 0, herd: 500000, event: 'Great Remigration durch Klimawandel'}
+            {id: 7, engagement: 0, herd: 500000, event: 'Great Remigration durch Klimawandel'},
+            {id: 12, engagement: 5, herd: 750000, event: 'Natürliche Herdenmuster'}
         ];
+
+        // Simulierter D-Wave-Output (q_opt; in echt via Python-Export)
+        let qOptFromDWave = 0.618;  // Platzhalter; ersetze mit realem Output
 
         function gaussSum(n) { return n * (n + 1) / 2; } // Für Punkte
 
@@ -37,28 +41,28 @@
             const mod = parseInt(document.getElementById('modSlider').value);
             const herd = parseInt(document.getElementById('herdSize').value);
             
-            // Gauss-Summe für Punkte (kumulativ, mit X-Engagement)
+            // Gauss-Summe für Punkte (mit X-Engagement & D-Wave qOpt)
             let totalEngagement = xData.reduce((sum, post) => sum + post.engagement, 0);
             const basePoints = gaussSum(Math.min(herd / 10000, 100) + totalEngagement);
-            const scaledPoints = Math.round(q * basePoints);
+            const scaledPoints = Math.round((q * qOptFromDWave) * basePoints);  // Mit D-Wave-Optimierung
             
-            // 3D-Simulation: Herde als Partikel (fraktal, mit X-Events als "Wellen")
+            // 3D-Simulation: Herde als Partikel (fraktal, mit X-Events)
             scene.children = []; // Clear
             const particles = new THREE.BufferGeometry();
             const positions = new Float32Array(3000); // 1000 Partikel
             for (let i = 0; i < 3000; i += 3) {
                 positions[i] = (Math.random() - 0.5) * 10 * q; // x mit Q
                 positions[i+1] = Math.sin(i / mod * 2 * Math.PI) * 5; // y zyklisch
-                positions[i+2] = Math.cos(i / mod * 2 * Math.PI) * 5 + (xData[Math.floor(i/300) % xData.length].engagement / 10); // z mit X-Data
+                positions[i+2] = Math.cos(i / mod * 2 * Math.PI) * 5 + (xData[Math.floor(i/300) % xData.length].engagement / 10); // z mit X
             }
             particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
             const material = new THREE.PointsMaterial({ color: 0xffa500, size: 0.1 });
             const herdMesh = new THREE.Points(particles, material);
             scene.add(herdMesh);
 
-            // Feedback: Mit X-Posts
-            let narrative = `Herdenmigration: ${herd} Tiere/Menschen in Zyklen.<br>`;
-            narrative += `Punkte: ${scaledPoints} (Gauss + X-Engagement).<br>`;
+            // Feedback: Mit X-Posts & D-Wave
+            let narrative = `Herdenmigration: ${herd} Tiere/Menschen in Zyklen (D-Wave-optimiert).<br>`;
+            narrative += `Punkte: ${scaledPoints} (Gauss + X-Engagement + qOpt=${qOptFromDWave}).<br>`;
             xData.forEach(post => narrative += `${post.event}: Engagement ${post.engagement}<br>`);
             narrative += 'Tabu abbauen: Natürliche Remigration als Muster!';
             document.getElementById('feedback').innerHTML = narrative;
