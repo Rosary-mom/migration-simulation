@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Migration-Simulation: Natürliche Muster</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style> body { margin: 0; } canvas { display: block; } .controls { position: absolute; top: 10px; left: 10px; background: white; padding: 10px; } #feedback { position: absolute; bottom: 10px; left: 10px; background: white; padding: 10px; } </style>
+</head>
+<body>
+    <div class="controls">
+        <label>Q-Faktor (Skalierung): <input type="range" id="qSlider" min="0.1" max="1.5" step="0.1" value="0.618"></label><br>
+        <label>Rosenkranz-Modulus (Zyklus): <input type="range" id="modSlider" min="50" max="200" step="10" value="108"></label><br>
+        <label>Herdengröße (bis 500k): <input type="number" id="herdSize" value="500000"></label><br>
+        <button onclick="simulate()">Migration simulieren</button>
+    </div>
+    <div id="feedback">Starte die Simulation...</div>
+    
+    <script>
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
+        camera.position.z = 20;
+
+        function gaussSum(n) { return n * (n + 1) / 2; } // Für kumulative Punkte
+
+        function simulate() {
+            const q = parseFloat(document.getElementById('qSlider').value);
+            const mod = parseInt(document.getElementById('modSlider').value);
+            const herd = parseInt(document.getElementById('herdSize').value);
+            
+            // Gauss-Summe für Punkte (kumulativer "Erfolg")
+            const basePoints = gaussSum(Math.min(herd / 10000, 100)); // Skaliert auf Herde
+            const scaledPoints = Math.round(q * basePoints);
+            
+            // 3D-Simulation: Herde als Partikel-System (Fraktal-Muster)
+            scene.children = []; // Clear
+            const particles = new THREE.BufferGeometry();
+            const positions = new Float32Array(3000); // Vereinfacht für 1000 Partikel
+            for (let i = 0; i < 3000; i += 3) {
+                positions[i] = (Math.random() - 0.5) * 10 * q; // x mit Q-Skalierung
+                positions[i+1] = (Math.sin(i / mod * 2 * Math.PI) * 5); // y zyklisch (Rosenkranz)
+                positions[i+2] = (Math.cos(i / mod * 2 * Math.PI) * 5); // z fraktal
+            }
+            particles.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            const material = new THREE.PointsMaterial({ color: 0xffa500, size: 0.1 }); // Orange für Springböcke
+            const herdMesh = new THREE.Points(particles, material);
+            scene.add(herdMesh);
+
+            // Feedback: Positives Narrativ
+            let narrative = `Herdenmigration simuliert: ${herd} Tiere/Menschen in natürlichen Zyklen.<br>`;
+            narrative += `Punkte: ${scaledPoints} – Erfolg durch adaptive Remigration.<br>`;
+            narrative += 'Tabu abbauen: Migration als regeneratives Muster!';
+            document.getElementById('feedback').innerHTML = narrative;
+
+            renderer.render(scene, camera);
+        }
+
+        function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); }
+        animate();
+    </script>
+</body>
+</html>
